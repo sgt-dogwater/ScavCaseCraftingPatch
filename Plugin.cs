@@ -19,11 +19,35 @@ namespace ScavCaseCraftingPatch
   {
     private void Awake()
     {
-      new ScavCaseCraftingPatch().Enable();
+      new ScavCaseViewPatch().Enable();
+      new Class1785Patch().Enable();
     }
   }
 
-  public class ScavCaseCraftingPatch : ModulePatch
+  public class Class1785Patch : ModulePatch
+  {
+    private static FieldInfo _productionsField;
+
+    protected override MethodBase GetTargetMethod()
+    {
+      return AccessTools.Method(typeof(ScavCaseView.Class1785), nameof(ScavCaseView.Class1785.method_1));
+    }
+
+    public static void Fixed_method_1(ScavCaseView.Class1785 __instance, ItemRequirement requirement, HideoutProductionRequirementView view)
+    {
+      view.Show(__instance.itemUiContext, __instance.inventoryController, requirement, __instance.scavCaseView_0.Scheme, __instance.allItems, __instance.scavCaseView_0.Producer.ProducingItems.Any<KeyValuePair<string, GClass2156>>(kv => kv.Key == __instance.scavCaseView_0.Scheme._id));
+      __instance.scavCaseView_0.Boolean_0 = __instance.scavCaseView_0.Boolean_0 & view.IsFulfilled;
+    }
+
+    [PatchPrefix]
+    public static bool PatchPrefix(ScavCaseView.Class1785 __instance, ItemRequirement requirement, HideoutProductionRequirementView view)
+    {
+      Fixed_method_1(__instance, requirement, view);
+      return false;
+    }
+  }
+
+  public class ScavCaseViewPatch : ModulePatch
   {
     private static FieldInfo _productionsField;
 
@@ -38,7 +62,7 @@ namespace ScavCaseCraftingPatch
     [MethodImpl(MethodImplOptions.NoInlining)]
     static string BaseUpdateViewDummy(ScavCaseView instance) => null;
 
-    public static void FixedUpdateView(ScavCaseView __instance)
+    public static void Fixed_UpdateView(ScavCaseView __instance)
     {
       if (__instance == null)
         return;
@@ -71,7 +95,7 @@ namespace ScavCaseCraftingPatch
     [PatchPrefix]
     public static bool PatchPrefix(ScavCaseView __instance)
     {
-      FixedUpdateView(__instance);
+      Fixed_UpdateView(__instance);
       return false;
     }
   }
